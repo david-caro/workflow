@@ -67,10 +67,10 @@ def TASK_JUMP_IF(cond, step):
 def BREAK():
     """Stop execution of the current block while keeping workflow running.
 
-    Usage: ``eng.breakFromThisLoop()``.
+    Usage: ``eng.break_current_loop()``.
     """
     def x(obj, eng):
-        eng.breakFromThisLoop()
+        eng.break_current_loop()
     x.__name__ = 'BREAK'
     return x
 
@@ -137,7 +137,7 @@ def IF(cond, branch):
     """
     def _x(obj, eng):
         return cond(obj, eng) and eng.jump_call(1) \
-            or eng.breakFromThisLoop()
+            or eng.break_current_loop()
     _x.__name__ = 'IF'
     return [_x, branch]
 
@@ -153,7 +153,7 @@ def IF_NOT(cond, branch):
     """
     def _x(obj, eng):
         if cond(obj, eng):
-            eng.breakFromThisLoop()
+            eng.break_current_loop()
         return 1
     _x.__name__ = 'IF_NOT'
     return [_x, branch]
@@ -192,7 +192,7 @@ def WHILE(cond, branch):
 
     def _x(obj, eng):
         if not cond(obj, eng):
-            eng.breakFromThisLoop()
+            eng.break_current_loop()
     _x.__name__ = 'WHILE'
     return [_x, branch, TASK_JUMP_BWD(-(len(branch) + 1))]
 
@@ -320,7 +320,7 @@ def FOR(get_list_function, setter, branch, cache_data=False, order="ASC"):
             setter(obj, eng, step,
                    eng.extra_data["_Iterators"][step]["previous_data"])
             del eng.extra_data["_Iterators"][step]
-            eng.breakFromThisLoop()
+            eng.break_current_loop()
 
     _for.__name__ = 'FOR'
     return [_for, branch, TASK_JUMP_BWD(-(len(branch) + 1))]
