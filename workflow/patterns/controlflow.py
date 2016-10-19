@@ -27,26 +27,26 @@ MAX_TIMEOUT = 30000
 
 
 def TASK_JUMP_BWD(step=-1):
-    """Jump to the previous task - eng.jumpCallBack.
+    """Jump to the previous task - eng.jump_call.
 
     Example: A, B, TASK_JUMP_FWD(-2), C, D, ...
     will produce: A, B, A, B, A, B, ... (recursion!)
     :param step: int, must not be positive number
     """
     def _move_back(obj, eng):
-        eng.jumpCallBack(step)
+        eng.jump_call(step)
     _move_back.__name__ = 'TASK_JUMP_BWD'
     return _move_back
 
 
 def TASK_JUMP_FWD(step=1):
-    """Jump to the next task - eng.jumpCallForward()
+    """Jump to the next task - eng.jump_call()
     example: A, B, TASK_JUMP_FWD(2), C, D, ...
     will produce: A, B, D
     :param step: int
     """
     def _x(obj, eng):
-        eng.jumpCallForward(step)
+        eng.jump_call(step)
     _x.__name__ = 'TASK_JUMP_FWD'
     return _x
 
@@ -58,15 +58,10 @@ def TASK_JUMP_IF(cond, step):
     :param cond: function
     :param step: int, negative jumps back, positive forward
     """
-    def minus(obj, eng):
-        return cond(obj, eng) and eng.jumpCallBack(step)
+    def jump(obj, eng):
+        return cond(obj, eng) and eng.jump_call(step)
 
-    def plus(obj, eng):
-        return cond(obj, eng) and eng.jumpCallForward(step)
-    if int(step) < 0:
-        return minus
-    else:
-        return plus
+    return jump
 
 
 def BREAK():
@@ -98,9 +93,9 @@ def HALT():
 
 def OBJ_NEXT():
     """Stop the workflow execution for the current object and start
-    the same worfklow for the next object - eng.continueNextToken()."""
+    the same worfklow for the next object - eng.break_current_loop()."""
     def x(obj, eng):
-        eng.continueNextToken()
+        eng.break_current_loop()
     x.__name__ = 'OBJ_NEXT'
     return x
 
@@ -141,7 +136,7 @@ def IF(cond, branch):
                 limited only inside the branch
     """
     def _x(obj, eng):
-        return cond(obj, eng) and eng.jumpCallForward(1) \
+        return cond(obj, eng) and eng.jump_call(1) \
             or eng.breakFromThisLoop()
     _x.__name__ = 'IF'
     return [_x, branch]
@@ -178,8 +173,8 @@ def IF_ELSE(cond, branch1, branch2):
         raise Exception("Neither of the branches can be None/empty")
 
     def _x(obj, eng):
-        return cond(obj, eng) and eng.jumpCallForward(1) \
-            or eng.jumpCallForward(3)
+        return cond(obj, eng) and eng.jump_call(1) \
+            or eng.jump_call(3)
     _x.__name__ = 'IF_ELSE'
     return [_x, branch1, BREAK(), branch2]
 
@@ -437,7 +432,7 @@ def CHOICE(arbiter, *predicates, **kwpredicates):
     def _exclusive_choice(obj, eng):
         val = arbiter(obj, eng)
         i = mapping[val]  # die on error
-        eng.jumpCallForward(i)
+        eng.jump_call(i)
     c = _exclusive_choice
     c.__name__ = arbiter.__name__
     workflow.insert(0, c)
