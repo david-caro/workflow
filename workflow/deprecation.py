@@ -27,7 +27,7 @@ def deprecated(message, category=DeprecationWarning):
         """Decorator which can be used to mark functions as deprecated.
 
         :param message: text to include in the warning
-        :param category: warning category
+        :param category: warning category exception class
         """
         @wraps(func)
         def new_func(*args, **kwargs):
